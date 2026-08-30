@@ -1,7 +1,57 @@
 import { useState } from "react";
 import Tesseract from "tesseract.js";
+import TypingGame from "./typing-game/TypingGame";
 
 function App() {
+  const [tab, setTab] = useState("typing");
+
+  return (
+    <div>
+      <nav
+        style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+          padding: "16px 0",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <button
+          onClick={() => setTab("typing")}
+          style={{
+            padding: "10px 18px",
+            borderRadius: 999,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: tab === "typing" ? 700 : 400,
+            background: tab === "typing" ? "var(--accent)" : "var(--accent-bg)",
+            color: tab === "typing" ? "#fff" : "var(--text-h)",
+          }}
+        >
+          ⌨️ 타자 연습 게임
+        </button>
+        <button
+          onClick={() => setTab("report")}
+          style={{
+            padding: "10px 18px",
+            borderRadius: 999,
+            border: "none",
+            cursor: "pointer",
+            fontWeight: tab === "report" ? 700 : 400,
+            background: tab === "report" ? "var(--accent)" : "var(--accent-bg)",
+            color: tab === "report" ? "#fff" : "var(--text-h)",
+          }}
+        >
+          🩸 피검사 결과 설명문 생성기
+        </button>
+      </nav>
+
+      {tab === "typing" ? <TypingGame /> : <BloodReportTool />}
+    </div>
+  );
+}
+
+function BloodReportTool() {
   const [inputText, setInputText] = useState("");
   const [referenceText, setReferenceText] = useState("");
   const [resultText, setResultText] = useState("");
@@ -85,6 +135,7 @@ function App() {
       const result = await Tesseract.recognize(file, "kor+eng");
       setInputText((prev) => prev + "\n" + result.data.text);
     } catch (error) {
+      console.error("OCR 실패:", error);
       alert("OCR 읽기에 실패했습니다.");
     }
 
