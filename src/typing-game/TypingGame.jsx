@@ -2,12 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CHARACTERS } from "./characters";
 import { WORD_BANKS, pickRandomWord } from "./wordLists";
 import { sound } from "./sound";
+import Mascot from "./Mascot";
+import StoryIntro from "./StoryIntro";
+import Tutorial from "./Tutorial";
 import "./TypingGame.css";
 
 const START_LIVES = 5;
 const BASE_FALL_SPEED = 6; // percent of stage height per second
 const PARTICLE_COLORS = ["#FF6B9D", "#FFD166", "#5B9BFF", "#06D6A0", "#FF9F43"];
 const HIGH_SCORE_KEY = "typingGame.bestScore";
+const STORY_SEEN_KEY = "typingGame.storySeen";
+const CHEER_LINES = ["우와 잘한다!", "최고야!", "힘내!", "대단해!", "짱이야!"];
 
 function loadBestScore() {
   const raw = Number(localStorage.getItem(HIGH_SCORE_KEY));
@@ -15,7 +20,10 @@ function loadBestScore() {
 }
 
 export default function TypingGame() {
-  const [screen, setScreen] = useState("select"); // select | playing | gameover
+  // select | tutorial | story | playing | gameover
+  const [screen, setScreen] = useState(() =>
+    localStorage.getItem(STORY_SEEN_KEY) ? "select" : "story"
+  );
   const [characterId, setCharacterId] = useState(CHARACTERS[0].id);
   const [language, setLanguage] = useState("ko");
   const [difficulty, setDifficulty] = useState("easy");
@@ -32,6 +40,8 @@ export default function TypingGame() {
   const [shake, setShake] = useState(false);
   const [particles, setParticles] = useState([]);
   const [bestScore, setBestScore] = useState(loadBestScore);
+  const [friendToast, setFriendToast] = useState(null);
+  const [cameo, setCameo] = useState(null);
 
   const wordsRef = useRef([]);
   const comboRef = useRef(0);
@@ -50,6 +60,8 @@ export default function TypingGame() {
   const mismatchRef = useRef(false);
   const animTimeoutRef = useRef(null);
   const shakeTimeoutRef = useRef(null);
+  const friendToastTimeoutRef = useRef(null);
+  const cameoTimeoutRef = useRef(null);
   const inputRef = useRef(null);
 
   const character = useMemo(
@@ -138,10 +150,22 @@ export default function TypingGame() {
       scoreRef.current = newScore;
       setScore(newScore);
 
+      const others = CHARACTERS.filter((c) => c.id !== character.id);
+
       const newLevel = Math.floor(newScore / 120) + 1;
       if (newLevel > levelRef.current) {
+        const oldLevel = levelRef.current;
         applyLevel(newLevel);
         sound.playLevelUp();
+
+        const oldUnlocked = Math.max(0, Math.min(oldLevel - 1, others.length));
+        const newUnlocked = Math.max(0, Math.min(newLevel - 1, others.length));
+        if (newUnlocked > oldUnlocked) {
+          const joined = others[newUnlocked - 1];
+          setFriendToast(`${joined.name}가 함께하기 시작했어요!`);
+          clearTimeout(friendToastTimeoutRef.current);
+          friendToastTimeoutRef.current = setTimeout(() => setFriendToast(null), 2200);
+        }
       }
 
       spawnParticles(word.x, word.y);
@@ -149,11 +173,18 @@ export default function TypingGame() {
 
       if (newCombo > 0 && newCombo % 5 === 0) {
         sound.playCombo(newCombo);
+        if (others.length > 0) {
+          const cheerFriend = others[Math.floor(Math.random() * others.length)];
+          const text = CHEER_LINES[Math.floor(Math.random() * CHEER_LINES.length)];
+          setCameo({ id: cheerFriend.id, text });
+          clearTimeout(cameoTimeoutRef.current);
+          cameoTimeoutRef.current = setTimeout(() => setCameo(null), 1300);
+        }
       } else {
         sound.playCorrect();
       }
     },
-    [spawnParticles, triggerCharacterAnim, applyLevel]
+    [spawnParticles, triggerCharacterAnim, applyLevel, character]
   );
 
   const handleMiss = useCallback(
@@ -220,6 +251,8 @@ export default function TypingGame() {
     () => () => {
       clearTimeout(animTimeoutRef.current);
       clearTimeout(shakeTimeoutRef.current);
+      clearTimeout(friendToastTimeoutRef.current);
+      clearTimeout(cameoTimeoutRef.current);
     },
     []
   );
@@ -242,8 +275,21 @@ export default function TypingGame() {
     applyLevel(1);
     setCharAnim("idle");
     setParticles([]);
+    setFriendToast(null);
+    setCameo(null);
     setScreen("playing");
     sound.playStart();
+  };
+
+  const finishStory = () => {
+    localStorage.setItem(STORY_SEEN_KEY, "true");
+    sound.playSelect();
+    setScreen("select");
+  };
+
+  const finishTutorial = () => {
+    sound.playSelect();
+    setScreen("select");
   };
 
   const backToSelect = () => {
@@ -301,6 +347,10 @@ export default function TypingGame() {
         </button>
       </div>
 
+      {screen === "story" && <StoryIntro onDone={finishStory} />}
+
+      {screen === "tutorial" && <Tutorial onFinish={finishTutorial} />}
+
       {screen === "select" && (
         <SelectScreen
           character={character}
@@ -321,6 +371,14 @@ export default function TypingGame() {
           }}
           bestScore={bestScore}
           onStart={startGame}
+          onTutorial={() => {
+            sound.playSelect();
+            setScreen("tutorial");
+          }}
+          onStory={() => {
+            sound.playSelect();
+            setScreen("story");
+          }}
         />
       )}
 
@@ -336,6 +394,8 @@ export default function TypingGame() {
           charAnim={charAnim}
           shake={shake}
           particles={particles}
+          friendToast={friendToast}
+          cameo={cameo}
           langLabel={langLabel}
           inputRef={inputRef}
           onChange={handleTypedChange}
@@ -368,21 +428,27 @@ function SelectScreen({
   setDifficulty,
   bestScore,
   onStart,
+  onTutorial,
+  onStory,
 }) {
   return (
     <div className="tg-select">
       <div className="tg-preview" style={{ background: character.colorLight }}>
-        <div className="tg-preview-char tg-idle-bob">
-          {character.image ? (
-            <img src={character.image} alt={character.name} />
-          ) : (
-            <span className="tg-emoji">{character.emoji}</span>
-          )}
+        <div className="tg-preview-char">
+          <Mascot {...character} size={110} expression="idle" alt={character.name} />
         </div>
         <p className="tg-preview-name" style={{ color: character.color }}>
           {character.name} <span>({character.nameEn})</span>
         </p>
         <p className="tg-best">🏆 최고 점수: {bestScore}</p>
+        <div className="tg-side-actions">
+          <button className="tg-link-btn" onClick={onStory}>
+            📖 우리들의 이야기
+          </button>
+          <button className="tg-link-btn" onClick={onTutorial}>
+            ⌨️ 처음이에요! 기초부터 배우기
+          </button>
+        </div>
       </div>
 
       <div className="tg-panel">
@@ -396,7 +462,7 @@ function SelectScreen({
                 style={{ "--card-color": c.color, "--card-bg": c.colorLight }}
                 onClick={() => setCharacterId(c.id)}
               >
-                <span className="tg-emoji">{c.emoji}</span>
+                <Mascot {...c} size={54} expression="idle" alt={c.name} />
                 <span className="tg-card-name">{c.name}</span>
               </button>
             ))}
@@ -480,12 +546,18 @@ function PlayScreen({
   charAnim,
   shake,
   particles,
+  friendToast,
+  cameo,
   langLabel,
   inputRef,
   onChange,
   onKeyDown,
   onExit,
 }) {
+  const others = CHARACTERS.filter((c) => c.id !== character.id);
+  const unlockedCount = Math.max(0, Math.min(level - 1, others.length));
+  const cameoFriend = cameo ? others.find((c) => c.id === cameo.id) : null;
+
   return (
     <div className="tg-play">
       <div className="tg-hud">
@@ -504,6 +576,17 @@ function PlayScreen({
           ⏹ 나가기
         </button>
       </div>
+
+      {others.length > 0 && (
+        <div className="tg-friend-meter">
+          <span className="tg-friend-meter-label">함께하는 친구</span>
+          {others.map((c, i) => (
+            <span key={c.id} className={`tg-friend-icon ${i < unlockedCount ? "joined" : "locked"}`}>
+              <Mascot {...c} size={30} expression="idle" alt={c.name} />
+            </span>
+          ))}
+        </div>
+      )}
 
       <div
         className="tg-stage"
@@ -529,12 +612,17 @@ function PlayScreen({
 
         <div className="tg-danger-line" />
 
-        <div className={`tg-character tg-anim-${charAnim}`}>
-          {character.image ? (
-            <img src={character.image} alt={character.name} />
-          ) : (
-            <span className="tg-emoji">{character.emoji}</span>
-          )}
+        {friendToast && <div className="tg-friend-toast">🎉 {friendToast}</div>}
+
+        {cameoFriend && (
+          <div className="tg-cameo">
+            <Mascot {...cameoFriend} size={54} expression="happy" alt={cameoFriend.name} />
+            <div className="tg-cameo-bubble">{cameo.text}</div>
+          </div>
+        )}
+
+        <div className="tg-character">
+          <Mascot {...character} size={70} expression={charAnim} alt={character.name} />
         </div>
       </div>
 
@@ -561,12 +649,8 @@ function GameOverScreen({ character, score, maxCombo, bestScore, onRetry, onBack
   const isNewBest = score >= bestScore && score > 0;
   return (
     <div className="tg-gameover">
-      <div className={`tg-preview-char tg-idle-bob ${score > 0 ? "tg-proud" : ""}`}>
-        {character.image ? (
-          <img src={character.image} alt={character.name} />
-        ) : (
-          <span className="tg-emoji tg-emoji-big">{character.emoji}</span>
-        )}
+      <div className="tg-preview-char">
+        <Mascot {...character} size={130} expression={score > 0 ? "proud" : "sad"} alt={character.name} />
       </div>
       <h2>게임 종료! Game Over</h2>
       {isNewBest && <p className="tg-new-best">🎉 최고 기록 갱신!</p>}
