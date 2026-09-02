@@ -289,6 +289,7 @@ export default function TypingGame() {
 
   const finishTutorial = () => {
     sound.playSelect();
+    setDifficulty((d) => (d === "tutorial" ? "easy" : d));
     setScreen("select");
   };
 
@@ -349,7 +350,9 @@ export default function TypingGame() {
 
       {screen === "story" && <StoryIntro onDone={finishStory} />}
 
-      {screen === "tutorial" && <Tutorial onFinish={finishTutorial} />}
+      {screen === "tutorial" && (
+        <Tutorial character={character} language={language} onFinish={finishTutorial} />
+      )}
 
       {screen === "select" && (
         <SelectScreen
@@ -370,10 +373,13 @@ export default function TypingGame() {
             sound.playSelect();
           }}
           bestScore={bestScore}
-          onStart={startGame}
-          onTutorial={() => {
-            sound.playSelect();
-            setScreen("tutorial");
+          onStart={() => {
+            if (difficulty === "tutorial") {
+              sound.playSelect();
+              setScreen("tutorial");
+            } else {
+              startGame();
+            }
           }}
           onStory={() => {
             sound.playSelect();
@@ -428,7 +434,6 @@ function SelectScreen({
   setDifficulty,
   bestScore,
   onStart,
-  onTutorial,
   onStory,
 }) {
   return (
@@ -444,9 +449,6 @@ function SelectScreen({
         <div className="tg-side-actions">
           <button className="tg-link-btn" onClick={onStory}>
             📖 우리들의 이야기
-          </button>
-          <button className="tg-link-btn" onClick={onTutorial}>
-            ⌨️ 처음이에요! 기초부터 배우기
           </button>
         </div>
       </div>
@@ -489,7 +491,14 @@ function SelectScreen({
 
         <section>
           <h2>3. 난이도를 골라보세요</h2>
+          <p className="tg-hint">타자가 처음이라면 🔰 튜토리얼부터 시작해보세요!</p>
           <div className="tg-toggle-row">
+            <button
+              className={`tg-toggle ${difficulty === "tutorial" ? "active" : ""}`}
+              onClick={() => setDifficulty("tutorial")}
+            >
+              🔰 튜토리얼
+            </button>
             <button
               className={`tg-toggle ${difficulty === "easy" ? "active" : ""}`}
               onClick={() => setDifficulty("easy")}

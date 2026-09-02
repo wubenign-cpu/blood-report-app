@@ -40,14 +40,33 @@
   transition: width 0.3s ease;
 }
 
-.tt-lesson-title {
-  font-size: 18px;
-  margin: 0 0 6px;
+.tt-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 16px;
 }
-.tt-lesson-desc {
+.tt-guide-bubble {
+  flex: 1;
+  background: #fbfaff;
+  border: 2px solid #efeaff;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.tt-guide-bubble strong {
+  display: block;
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+.tt-guide-bubble p {
+  margin: 0 0 4px;
   font-size: 14px;
   color: #6b6375;
-  margin: 0 0 18px;
+}
+.tt-guide-line {
+  color: #ff6b9d !important;
+  font-weight: 600;
 }
 
 .tt-target {
@@ -205,7 +224,11 @@
   .tt-root { color: #f3f4f6; }
   .tt-exit-btn { background: #3a2530; color: #ff9fb2; }
   .tt-progress-outer { background: #2a2536; }
-  .tt-lesson-desc { color: #a79fc0; }
+  .tt-guide-bubble {
+    background: #1f1c29;
+    border-color: #332d47;
+  }
+  .tt-guide-bubble p { color: #a79fc0; }
   .tt-target {
     background: #1f1c29;
     border-color: #332d47;
