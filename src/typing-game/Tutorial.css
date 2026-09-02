@@ -27,6 +27,52 @@
   font-size: 13px;
 }
 
+.tt-lang-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tt-lang-btn {
+  border: 2px solid #efeaff;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  color: #4a4458;
+}
+.tt-lang-btn.active {
+  background: #aa3bff;
+  color: #fff;
+  border-color: #aa3bff;
+}
+
+.tt-stage-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.tt-stage-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f2f0f5;
+  color: #b3adc0;
+}
+.tt-stage-pill.done {
+  background: #ffe8f0;
+  color: #ff6b9d;
+}
+.tt-stage-pill.active {
+  background: #ff6b9d;
+  color: #fff;
+  font-weight: 700;
+}
+
 .tt-progress-outer {
   height: 10px;
   background: #f4f0ff;
@@ -40,14 +86,33 @@
   transition: width 0.3s ease;
 }
 
-.tt-lesson-title {
-  font-size: 18px;
-  margin: 0 0 6px;
+.tt-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 16px;
 }
-.tt-lesson-desc {
+.tt-guide-bubble {
+  flex: 1;
+  background: #fbfaff;
+  border: 2px solid #efeaff;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.tt-guide-bubble strong {
+  display: block;
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+.tt-guide-bubble p {
+  margin: 0 0 4px;
   font-size: 14px;
   color: #6b6375;
-  margin: 0 0 18px;
+}
+.tt-guide-line {
+  color: #ff6b9d !important;
+  font-weight: 600;
 }
 
 .tt-target {
@@ -185,6 +250,13 @@
   color: #6b6375;
 }
 
+.tt-done-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .tt-primary-btn {
   border: none;
   border-radius: 16px;
@@ -205,7 +277,11 @@
   .tt-root { color: #f3f4f6; }
   .tt-exit-btn { background: #3a2530; color: #ff9fb2; }
   .tt-progress-outer { background: #2a2536; }
-  .tt-lesson-desc { color: #a79fc0; }
+  .tt-guide-bubble {
+    background: #1f1c29;
+    border-color: #332d47;
+  }
+  .tt-guide-bubble p { color: #a79fc0; }
   .tt-target {
     background: #1f1c29;
     border-color: #332d47;
@@ -222,4 +298,13 @@
   }
   .tt-hand-legend { color: #a79fc0; }
   .tt-done p { color: #a79fc0; }
+  .tt-lang-btn {
+    background: #1f1c29;
+    border-color: #332d47;
+    color: #d8d3e6;
+  }
+  .tt-stage-pill {
+    background: #2a2536;
+    color: #6b6480;
+  }
 }

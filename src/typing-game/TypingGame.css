@@ -151,6 +151,12 @@
   box-shadow: 0 4px 0 var(--card-color);
 }
 
+.tg-hint {
+  font-size: 12px;
+  color: #9a94a8;
+  margin: -4px 0 8px;
+}
+
 .tg-toggle-row {
   display: flex;
   gap: 8px;
@@ -503,6 +509,9 @@
     color: #d8d3e6;
   }
   .tg-friend-meter {
+    color: #a79fc0;
+  }
+  .tg-hint {
     color: #a79fc0;
   }
   .tg-friend-toast {
