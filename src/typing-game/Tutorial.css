@@ -27,6 +27,52 @@
   font-size: 13px;
 }
 
+.tt-lang-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.tt-lang-btn {
+  border: 2px solid #efeaff;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  color: #4a4458;
+}
+.tt-lang-btn.active {
+  background: #aa3bff;
+  color: #fff;
+  border-color: #aa3bff;
+}
+
+.tt-stage-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.tt-stage-pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f2f0f5;
+  color: #b3adc0;
+}
+.tt-stage-pill.done {
+  background: #ffe8f0;
+  color: #ff6b9d;
+}
+.tt-stage-pill.active {
+  background: #ff6b9d;
+  color: #fff;
+  font-weight: 700;
+}
+
 .tt-progress-outer {
   height: 10px;
   background: #f4f0ff;
@@ -204,6 +250,13 @@
   color: #6b6375;
 }
 
+.tt-done-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .tt-primary-btn {
   border: none;
   border-radius: 16px;
@@ -245,4 +298,13 @@
   }
   .tt-hand-legend { color: #a79fc0; }
   .tt-done p { color: #a79fc0; }
+  .tt-lang-btn {
+    background: #1f1c29;
+    border-color: #332d47;
+    color: #d8d3e6;
+  }
+  .tt-stage-pill {
+    background: #2a2536;
+    color: #6b6480;
+  }
 }
